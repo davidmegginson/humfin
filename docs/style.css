@@ -1,0 +1,19 @@
+body {
+    font-family: Arial, sanserif;
+}
+
+dt {
+    font-weight: bold;
+    margin-top: 2ex;
+    font-size: 110%;
+}
+
+dd {
+    margin-top: 1ex;
+}
+
+.labeled-text .label {
+    font-weight: bold;
+    font-style: italic;
+    font-size: 90%;
+}
