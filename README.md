@@ -1,7 +1,9 @@
 Humanitarian financing library
 ==============================
 
-Javascript library for pulling humanitarian finance data from the IATI dataset
+Javascript library for pulling humanitarian finance data from the IATI datastore.
+
+Live code: https://davidmegginson.github.io/humfin/
 
 ## License
 
