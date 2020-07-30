@@ -5,8 +5,26 @@
 /**
  * Top-level namespace
  */
-var humfin = {}
+var humfin = {
+}
 
+
+//
+// Codelists (TODO - move to separate JSON file)
+//
+humfin.activity_status = {
+    1: "Pipeline/Identification",
+    2: "Implementation",
+    3: "Finalisation",
+    4: "Closed",
+    5: "Cancelled",
+    6: "Suspended"
+};
+
+
+//
+// Functions
+//
 
 /**
  * Build a Solr search query
@@ -165,6 +183,7 @@ window.onload = () => {
             var entry = document.createElement("dt");
             var link = document.createElement("a");
             link.setAttribute("href", "http://d-portal.org/q.html?aid=" + encodeURIComponent(activity.iati_identifier));
+            link.setAttribute("target", "_blank");
             if (activity.title_narrative_text) {
                 link.textContent = activity.title_narrative_text[0];
             } else {
@@ -176,6 +195,11 @@ window.onload = () => {
             container.appendChild(labeledText(
                 "IATI identifier",
                 activity.iati_identifier
+            ));
+
+            container.appendChild(labeledText(
+                "Status",
+                humfin.activity_status[activity.activity_status_code]
             ));
 
             if (activity.reporting_org_narrative) {
@@ -203,6 +227,13 @@ window.onload = () => {
                 container.appendChild(labeledText(
                     "Sector codes",
                     [...new Set(activity.sector_code)].join(", ")
+                ));
+            }
+
+            if (activity.recipient_country_code) {
+                container.appendChild(labeledText(
+                    "Recipient countries",
+                    [...new Set(activity.recipient_country_code)].join(", ")
                 ));
             }
 
