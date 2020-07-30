@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 // Look up humanitarian activities in the IATI Datastore
 ////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +13,14 @@ var humfin = {}
  */
 humfin.buildQuery = function (params) {
 
+    // Tweaks
+
+    if (params.year) {
+        params.dateFrom = params.year + "-01-01";
+        params.dateTo = params.year + "-12-31";
+    }
+
+
     // list of Solr search terms that will be joined by " AND "
     var terms = [];
 
@@ -25,9 +33,26 @@ humfin.buildQuery = function (params) {
         terms.push("(humanitarian:(1) OR sector_code(720 730 740))");
     }
 
-    if (params.dateAfter) {
+    if (params.dateFrom) {
         // TODO validate date and add time if needed
-        terms.push("(activity_date_end_actual_f:[" + params.dateAfter + " TO *] OR (-activity_date_end_actual_f:[* TO *] AND activity_date_end_planned_f:[" + params.dateAfter + " TO *]))");
+        terms.push(
+            "(activity_date_end_actual:["
+                + params.dateFrom
+                + " TO *] OR (-activity_date_end_actual:[* TO *] AND activity_date_end_planned:["
+                + params.dateFrom
+                + " TO *]))"
+        );
+    }
+
+    if (params.dateTo) {
+        // TODO validate date and add time if needed
+        terms.push(
+            "(activity_date_start_actual:[* TO "
+                + params.dateTo
+                + "] OR (-activity_date_start_actual:[* TO *] AND activity_date_start_planned:[* TO "
+                + params.dateTo
+                + "]))"
+        );
     }
 
     // if there are no terms, push a wildcard
@@ -109,12 +134,22 @@ window.onload = () => {
         country = "SY";
     }
 
-    var countryNode = document.getElementById("country");
+    const thisYear = new Date().getFullYear();
+    var year = getParams.get("year");
+    if (!year) {
+        year = thisYear
+    }
+
+    const countryNode = document.getElementById("field-country");
     countryNode.value = country;
 
-    var params = {
+    const yearNode = document.getElementById("field-year");
+    yearNode.value = year;
+    yearNode.max = thisYear + 5;
+
+    const params = {
         countries: [country],
-        dateAfter: "2020-01-01T00:00:00Z",
+        year: year,
         humanitarian: true
     };
 
@@ -122,7 +157,7 @@ window.onload = () => {
     promise.then((activities) => {
 
         var count = document.getElementById("count");
-        count.textContent = "Humanitarian activities from " + params.dateAfter.substring(0, 10) + " in " + params.countries[0] + " (" + activities.length + ")";
+        count.textContent = "Humanitarian activities for " + params.year + " in " + params.countries[0] + " (" + activities.length + ")";
         
         var container = document.getElementById("activities");
         container.innerHTML = "";

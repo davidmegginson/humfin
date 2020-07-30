@@ -21,12 +21,16 @@ dd {
     margin-top: 1ex;
 }
 
-.labeled-text .label {
+.label {
     font-weight: bold;
     font-style: italic;
     font-size: 90%;
 }
 
-input#country {
-    width: 3em;
+input#field-country {
+    width: 2em;
+}
+
+input#field-year {
+    width: 4em;
 }

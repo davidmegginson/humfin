@@ -9,8 +9,12 @@
   <body>
     <form target="">
       <label>
-        Country ISO2:
-        <input id="country" name="country"></input>
+        <span class="label">Country ISO2:</span>
+        <input id="field-country" name="country" minlength="2" maxlength="2"></input>
+      </label>
+      <label>
+        <span class="label">Year:</span>
+        <input id="field-year" name="year" type="number" min="1990" max="2021"></input>
       </label>
       <button type="submit">Update</button>
     </form>
