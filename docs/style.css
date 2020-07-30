@@ -17,3 +17,7 @@ dd {
     font-style: italic;
     font-size: 90%;
 }
+
+input#country {
+    width: 3em;
+}
