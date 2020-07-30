@@ -13,35 +13,29 @@ var humfin = {}
  */
 humfin.buildQuery = function (params) {
 
-    var query = "";
-
-    function addTerm (term) {
-        if (!query) {
-            query = term;
-        } else {
-            query += " AND " + term;
-        }
-    }
+    // list of Solr search terms that will be joined by " AND "
+    var terms = [];
 
     if (params.countries) {
         // TODO validate country codes
-        addTerm("recipient_country_code:(" + params.countries.join(" ") + ")");
+        terms.push("recipient_country_code:(" + params.countries.join(" ") + ")");
     }
 
     if (params.humanitarian) {
-        addTerm("(humanitarian:(1) OR sector_code(720 730 740))");
+        terms.push("(humanitarian:(1) OR sector_code(720 730 740))");
     }
 
     if (params.dateAfter) {
         // TODO validate date and add time if needed
-        addTerm("(activity_date_end_actual_f:[" + params.dateAfter + " TO *] OR (-activity_date_end_actual_f:[* TO *] AND activity_date_end_planned_f:[" + params.dateAfter + " TO *]))");
+        terms.push("(activity_date_end_actual_f:[" + params.dateAfter + " TO *] OR (-activity_date_end_actual_f:[* TO *] AND activity_date_end_planned_f:[" + params.dateAfter + " TO *]))");
     }
 
-    if (!query) {
-        query = "*.*";
+    // if there are no terms, push a wildcard
+    if (terms.length == 0) {
+        terms.push("*.*");
     }
 
-    return query;
+    return terms.join(" AND ");
 }
 
 
@@ -134,12 +128,34 @@ window.onload = () => {
         container.innerHTML = "";
         activities.forEach((activity) => {
             var entry = document.createElement("dt");
+            var link = document.createElement("a");
+            link.setAttribute("href", "http://d-portal.org/q.html?aid=" + encodeURIComponent(activity.iati_identifier));
             if (activity.title_narrative_text) {
-                entry.textContent = activity.title_narrative_text[0];
+                link.textContent = activity.title_narrative_text[0];
             } else {
-                entry.textContent = "** No title **";
+                link.textContent = activity.iati_identifier;
             }
+            entry.appendChild(link);
             container.appendChild(entry);
+
+            container.appendChild(labeledText(
+                "IATI identifier",
+                activity.iati_identifier
+            ));
+
+            if (activity.reporting_org_narrative) {
+                container.appendChild(labeledText(
+                    "Reporting org",
+                    activity.reporting_org_narrative[0]
+                ));
+            }
+
+            if (activity.participating_org_narrative) {
+                container.appendChild(labeledText(
+                    "Participating orgs",
+                    [...new Set(activity.participating_org_narrative)].join(", ")
+                ));
+            }
 
             if (activity.budget_value) {
                 container.appendChild(labeledText(
@@ -148,17 +164,10 @@ window.onload = () => {
                 ));
             }
 
-            if (activity.participating_org_narrative) {
-                container.appendChild(labeledText(
-                    "Participating orgs",
-                    activity.participating_org_narrative.join(", ")
-                ));
-            }
-
             if (activity.sector_code) {
                 container.appendChild(labeledText(
                     "Sector codes",
-                    activity.sector_code.join(", ")
+                    [...new Set(activity.sector_code)].join(", ")
                 ));
             }
 
