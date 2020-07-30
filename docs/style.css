@@ -7,6 +7,10 @@ body {
     font-family: Arial, sanserif;
 }
 
+a {
+    text-decoration: none;
+}
+
 dt {
     font-weight: bold;
     margin-top: 2ex;
