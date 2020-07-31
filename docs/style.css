@@ -27,10 +27,6 @@ dd {
     font-size: 90%;
 }
 
-input#field-country {
-    width: 2em;
-}
-
 input#field-year {
     width: 4em;
 }

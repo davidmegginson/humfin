@@ -3,6 +3,7 @@
   <head>
     <title>Humanitarian activities</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" sizes="192x192" href="humanitarian-financing.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
   </head>
@@ -10,7 +11,9 @@
     <form target="">
       <label>
         <span class="label">Country ISO2:</span>
-        <input id="field-country" name="country" minlength="2" maxlength="2"></input>
+        <select id="field-country" name ="country">
+          <option selected="selected">Loading...</option>
+        </select>
       </label>
       <label>
         <span class="label">Year:</span>

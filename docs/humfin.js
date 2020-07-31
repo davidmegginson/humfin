@@ -44,7 +44,7 @@ humfin.buildQuery = function (params) {
 
     if (params.countries) {
         // TODO validate country codes
-        terms.push("recipient_country_code:(" + params.countries.join(" ") + ")");
+        terms.push("(recipient_country_code:(" + params.countries.join(" ") + "))");
     }
 
     if (params.humanitarian) {
@@ -96,12 +96,13 @@ humfin.getActivitiesPromise = function (params) {
 
         const url = "https://iatidatastore.iatistandard.org/search/activity?wt=json&rows=999999&q=" + encodeURIComponent(humfin.buildQuery(params));
 
+        console.log(url);
+
         request.responseType = 'json';
         request.open("GET", url);
 
         request.onload = () => {
             if (request.status == 200) {
-                console.log(request.response);
                 resolve(request.response.response.docs);
             } else {
                 reject(Error(request.statusText));
@@ -116,6 +117,33 @@ humfin.getActivitiesPromise = function (params) {
     });
 
     return promise;
+};
+
+
+humfin.getCountriesPromise = function () {
+    const promise = new Promise((resolve, reject) => {
+        const request = new XMLHttpRequest();
+
+        request.responseType = 'json';
+        request.open("GET", "countries.json");
+
+        request.onload = () => {
+            if (request.status == 200) {
+                resolve(request.response);
+            } else {
+                reject(Error(request.statusText));
+            }
+        };
+
+        request.onerror = () => {
+            reject(Error("Error fetching data."));
+        };
+
+        request.send();
+    });
+
+    return promise;
+
 };
 
 
@@ -158,24 +186,57 @@ window.onload = () => {
         year = thisYear
     }
 
-    const countryNode = document.getElementById("field-country");
-    countryNode.value = country;
-
-    const yearNode = document.getElementById("field-year");
-    yearNode.value = year;
-    yearNode.max = thisYear + 5;
-
     const params = {
         countries: [country],
         year: year,
         humanitarian: true
     };
 
-    var promise = humfin.getActivitiesPromise(params);
-    promise.then((activities) => {
+    const countriesPromise = humfin.getCountriesPromise();
+    countriesPromise.catch((e) => {
+        console.error(e);
+        alert("Error loading country codes: " + e);
+    });
+
+    const iatiPromise = humfin.getActivitiesPromise(params);
+    countriesPromise.catch((e) => {
+        console.error(e);
+        alert("Error querying IATI datastore: " + e);
+    });
+
+
+    Promise.all([countriesPromise, iatiPromise]).then((results) => {
+
+        const countries = results[0];
+        const activities = results[1];
+        var countryName = "[Unknown]";
+
+        // Set up the countries dropdown and get the current country name
+        const countryNode = document.getElementById("field-country");
+        countryNode.innerHTML = "";
+        countries.forEach((entry) => {
+            var sel = document.createElement("option");
+            var index = entry[1].lastIndexOf(" (");
+            if (index != -1) {
+                entry[1] = entry[1].substring(0, index + 1);
+            }
+            if (entry[0] == country) {
+                sel.setAttribute("selected", "selected");
+                countryName = entry[1];
+            }
+            sel.setAttribute("value", entry[0]);
+            sel.textContent = entry[1];
+            countryNode.appendChild(sel);
+        });
+
+        const yearNode = document.getElementById("field-year");
+        yearNode.value = year;
+        yearNode.max = thisYear + 5;
+
+        
 
         var count = document.getElementById("count");
-        count.textContent = "Humanitarian activities for " + params.year + " in " + params.countries[0] + " (" + activities.length + ")";
+        count.textContent = "Humanitarian activities for " + params.year + " in " + countryName + " (" + activities.length + ")";
         
         var container = document.getElementById("activities");
         container.innerHTML = "";
